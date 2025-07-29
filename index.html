@@ -202,5 +202,72 @@
       });
     }
   </script>
+
+
+<div style="width: 100%; max-width: 800px; margin-top: 40px; padding: 20px; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); font-family: 'Montserrat', sans-serif;">
+  <h3 style="color: #2E3233;">🛠️ Como usar sua assinatura</h3>
+
+  <p style="margin-top: 10px;">Após gerar e baixar sua imagem, siga o passo a passo abaixo para usar no seu e-mail:</p>
+
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+
+    <div style="flex: 1; min-width: 240px;">
+      <button onclick="toggleInstrucoes('gmail-instrucoes')" style="background-color: #F9401B; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%;">📩 Instruções para Gmail</button>
+    </div>
+
+    <div style="flex: 1; min-width: 240px;">
+      <button onclick="toggleInstrucoes('hubspot-instrucoes')" style="background-color: #284516; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%;">📊 Instruções para HubSpot</button>
+    </div>
+
+  </div>
+
+  <!-- Gmail Instructions -->
+  <div id="gmail-instrucoes" style="display: none; margin-top: 30px;">
+    <h4 style="color: #2E3233;">📩 Como adicionar no Gmail:</h4>
+    <ol style="padding-left: 20px; margin-top: 10px;">
+      <li>Acesse o Gmail e clique no ícone de engrenagem (⚙️).</li>
+      <li>Clique em <strong>“Mostrar todas as configurações”</strong>.</li>
+      <li>Na aba <strong>“Geral”</strong>, desça até <strong>“Assinatura”</strong>.</li>
+      <li>Clique em <strong>“+ Criar novo”</strong> e dê um nome à assinatura.</li>
+      <li>Clique no ícone <strong>"Inserir imagem"</strong>.</li>
+      <li>Clique na aba <strong>"Google Drive"</strong>.</li>
+      <li>Clique em <strong>"Fazer upload"</strong> e em <strong>"Procurar"</strong>.</li>
+      <li>Após inserir a imagem, clique em <strong>"Permitir"</strong> na caixa de diálogo.</li>
+      <li>Com a imagem carregada, clique sobre ela e após selecione a opção <strong>"Grande"</strong> para redimensioná-la.</li>
+      <li>Com a assinatura criada, defina ela como padrão para uso em novos e-mails e respostas/encaminhamentos.</li>
+      <li>Role até o fim e clique em <strong>“Salvar alterações”</strong>.</li>
+    </ol>
+    <img src="https://i.imgur.com/0prBUPu.png" alt="Passo a passo Gmail" style="max-width: 100%; border-radius: 10px; margin-top: 10px;" />
+  </div>
+
+  <!-- HubSpot Instructions -->
+  <div id="hubspot-instrucoes" style="display: none; margin-top: 30px;">
+    <h4 style="color: #2E3233;">📊 Como adicionar no HubSpot:</h4>
+    <ol style="padding-left: 20px; margin-top: 10px;">
+      <li>Entre em sua conta HubSpot.</li>
+      <li>No canto superior direito, clique na sua foto e vá em <strong>“Perfil e preferências”</strong>.</li>
+      <li>No menu acima, selecione a aba <strong>“E-mail”</strong>.</li>
+      <li>Clique em <strong>“Gerenciar assinaturas de e-mail”</strong>.</li>
+      <li>Clique no ícone <strong>"Inserir imagem"</strong>.</li>
+      <li>Clique no botão <strong>"Carregar"</strong> e selecione a imagem no seu computador.</li>
+      <li>Com a imagem carregada, clique sobre ela.</li>
+      <li>Clique em <strong>Salvar</strong>.</li>
+    </ol>
+    <img src="https://i.imgur.com/n1T2h90.png" alt="Passo a passo HubSpot" style="max-width: 100%; border-radius: 10px; margin-top: 10px;" />
+  </div>
+</div>
+
+<script>
+  function toggleInstrucoes(id) {
+    const el = document.getElementById(id);
+    if (el.style.display === 'block') {
+      el.style.display = 'none';
+    } else {
+      el.style.display = 'block';
+    }
+  }
+</script>
+
+
 </body>
 </html>
