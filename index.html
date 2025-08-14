@@ -3,121 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <title>Gerador de Assinatura Frota 162</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background-color: #EFEFEF;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+    body{font-family:'Montserrat',Arial,sans-serif;background:#EFEFEF;display:flex;flex-direction:column;align-items:center;padding:20px;min-height:100vh;}
+    #form-container{display:flex;flex-direction:column;align-items:flex-start;width:340px;margin-bottom:20px;background:#fff;padding:15px 20px;border-radius:10px;box-shadow:0 0 8px rgba(0,0,0,.1);}
+    label{font-weight:600;color:#2E3233;margin-top:10px;margin-bottom:6px;width:100%;}
+    input[type="text"],input[type="url"],input[type="file"]{margin:5px 0;padding:10px;font-size:14px;border-radius:10px;border:1.5px solid #ccc;font-family:'Montserrat',sans-serif;box-sizing:border-box;width:100%;}
+    ::placeholder{color:#a9a9a9;font-style:italic;}
+    #whatsapp-container{margin-top:6px;display:flex;align-items:center;width:100%;}
+    #whatsapp-container label{font-weight:400;color:#284516;cursor:pointer;margin-left:8px;user-select:none;}
+    .btn{border:none;cursor:pointer;font-weight:600;transition:background-color .3s ease;margin-top:12px;padding:10px 14px;border-radius:10px;color:#fff;}
+    #btnGerar{background:#284516;}
+    #btnGerar:hover{background:#1e330f;}
+    #btnCopiar{background:#F9401B;display:none;margin-left:10px;}
+    #btnCopiar:hover{background:#c33317;}
+    #btnEditarFoto{background:#2E3233;}
+    #btnEditarFoto:hover{background:#1c1f20;}
+    #buttons-container{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+    #assinatura-preview{margin-top:20px;background:#fff;padding:20px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,.1);max-width:740px;width:100%;}
+
+    /* ===== Editor de Foto (modal simples) ===== */
+    #editor-backdrop{
+      position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:9999;
     }
-    #form-container {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      width: 320px;
-      margin-bottom: 20px;
+    #editor-modal{
+      width:520px;max-width:90vw;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.25);padding:16px 16px 12px 16px;
     }
-    #assinatura-container {
-      position: relative;
-      width: 660px;
-      height: 300px;
-      background-image: url('https://i.imgur.com/isJh12W.png');
-      background-size: cover;
-      background-position: center;
-      margin-bottom: 20px;
-    }
-    .foto {
-      position: absolute;
-      top: 44px;
-      left: 40px;
-      width: 200px;
-      height: 211px;
-      border-radius: 20px;
-      object-fit: cover;
-      border: 0px solid #2E3233;
-    }
-    .nome {
-      position: absolute;
-      top: 100px;
-      left: 260px;
-      color: #2E3233;
-      font-weight: 700;
-      font-size: 18px;
-    }
-    .cargo {
-      position: absolute;
-      top: 125px;
-      left: 260px;
-      color: #F9401B;
-      font-weight: 500;
-      font-size: 16px;
-    }
-    .telefone {
-      position: absolute;
-      top: 152px;
-      left: 280px;
-      color: #284516;
-      font-weight: 400;
-      font-size: 14px;
-    }
-    label {
-      font-weight: 600;
-      color: #2E3233;
-      margin-top: 10px;
-      margin-bottom: 6px;
-      width: 100%;
-    }
-    input,
-    button {
-      margin: 5px 0;
-      padding: 10px;
-      font-size: 14px;
-      border-radius: 10px;
-      border: 1.5px solid #ccc;
-      font-family: 'Montserrat', sans-serif;
-      box-sizing: border-box;
-      width: 100%;
-    }
-    ::placeholder {
-      color: #a9a9a9;
-      font-style: italic;
-    }
-    button {
-      border: none;
-      cursor: pointer;
-      width: 150px;
-      font-weight: 600;
-      transition: background-color 0.3s ease;
-      margin-top: 15px;
-    }
-    #btnGerar {
-      background-color: #284516;
-      color: white;
-      margin-right: 10px;
-    }
-    #btnGerar:hover {
-      background-color: #1e330f;
-    }
-    #btnBaixar {
-      background-color: #F9401B;
-      color: white;
-    }
-    #btnBaixar:hover {
-      background-color: #c33317;
-    }
-    #buttons-container {
-      display: flex;
-      gap: 10px;
-      width: 100%;
-      justify-content: flex-start;
-    }
-    canvas {
-      display: none;
-    }
+    #editor-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+    #editor-title{font-weight:700;color:#2E3233}
+    #editor-close{border:none;background:transparent;font-size:24px;cursor:pointer;line-height:1;color:#2E3233}
+    #editor-canvas-wrap{position:relative;width:480px;height:320px;max-width:86vw;background:#f4f4f4;border-radius:10px;margin:8px auto;overflow:hidden;border:1px solid #ddd}
+    #editor-canvas{display:block;width:100%;height:100%}
+    #editor-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 4px 0 4px;flex-wrap:wrap}
+    .range{width:200px}
+    #editor-help{font-size:12px;color:#555}
+    #editor-apply{background:#284516}
+    #editor-apply:hover{background:#1e330f}
   </style>
 </head>
 <body>
@@ -125,149 +47,458 @@
 
   <div id="form-container">
     <label for="nome">NOME</label>
-    <input
-      type="text"
-      id="nome"
-      placeholder="Ex: Marcelo Lemos"
-      value=""
-    />
-
+    <input type="text" id="nome" placeholder="Ex: Marcelo Lemos" />
     <label for="cargo">CARGO</label>
-    <input
-      type="text"
-      id="cargo"
-      placeholder="Ex: CEO & Founder"
-      value=""
-    />
-
+    <input type="text" id="cargo" placeholder="Ex: CEO & Founder" />
     <label for="telefone">TELEFONE</label>
-    <input
-      type="text"
-      id="telefone"
-      placeholder="Ex: (11) 99999-9999"
-      value=""
-    />
-
-    <label for="foto">ESCOLHA UMA FOTO SUA</label>
+    <input type="text" id="telefone" placeholder="Ex: (11) 99999-9999" />
+    <div id="whatsapp-container">
+      <input type="checkbox" id="whatsapp" />
+      <label for="whatsapp">Selecione se o número também for WhatsApp</label>
+    </div>
+    <label for="linkedin">LINKEDIN (aceita https, www, ou só o handle)</label>
+    <input type="url" id="linkedin" placeholder="Ex: linkedin.com/in/seu-usuario ou seu-usuario" />
+    <label for="foto">FOTO</label>
     <input type="file" id="foto" accept="image/*" />
-
     <div id="buttons-container">
-      <button id="btnGerar" type="button" onclick="gerarAssinatura()">Gerar Assinatura</button>
-      <button id="btnBaixar" type="button" onclick="baixarImagem()">Baixar como Imagem</button>
+      <button id="btnGerar" type="button" class="btn">Gerar assinatura</button>
+      <button id="btnEditarFoto" type="button" class="btn" disabled>Editar foto</button>
+      <button id="btnCopiar" type="button" class="btn">Copiar</button>
     </div>
   </div>
 
-  <div id="assinatura-container">
-    <img id="foto-preview" class="foto" src="" alt="" />
-    <div class="nome" id="nome-preview"></div>
-    <div class="cargo" id="cargo-preview"></div>
-    <div class="telefone" id="telefone-preview"></div>
+  <div id="assinatura-preview"></div>
+
+  <!-- ===== Modal do Editor de Foto ===== -->
+  <div id="editor-backdrop">
+    <div id="editor-modal">
+      <div id="editor-header">
+        <div id="editor-title">Ajustar foto (arraste para posicionar e use o zoom)</div>
+        <button id="editor-close" title="Fechar">&times;</button>
+      </div>
+      <div id="editor-canvas-wrap">
+        <canvas id="editor-canvas" width="480" height="320"></canvas>
+      </div>
+      <div id="editor-controls">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span>Zoom</span>
+          <input type="range" id="zoom" class="range" min="0.5" max="3" step="0.01" value="1">
+        </div>
+        <div id="editor-help">Dica: arraste a imagem para centralizar dentro do círculo.</div>
+        <button id="editor-apply" class="btn">Aplicar recorte</button>
+      </div>
+    </div>
   </div>
 
-  <canvas id="assinatura-canvas" width="660" height="300"></canvas>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    function gerarAssinatura() {
-      document.getElementById('nome-preview').innerText =
-        document.getElementById('nome').value;
-      document.getElementById('cargo-preview').innerText =
-        document.getElementById('cargo').value;
-      document.getElementById('telefone-preview').innerText =
-        document.getElementById('telefone').value;
+    // ===== Estado global simples =====
+    let originalImage = null;        // Image() carregada
+    let croppedPhotoData = '';       // DataURL final (círculo) após "Aplicar recorte"
+    let editor = {                   // Estado do editor
+      canvas: null, ctx: null, img: null,
+      scale: 1, minScale: 0.5, maxScale: 3,
+      offsetX: 0, offsetY: 0,
+      dragging: false, lastX: 0, lastY: 0,
+      baseFit: 1,
+    };
 
-      const file = document.getElementById('foto').files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          document.getElementById('foto-preview').src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      } else {
-        document.getElementById('foto-preview').src = '';
+    // ===== Util: parse LinkedIn robusto =====
+    function parseLinkedin(link) {
+      if (!link) return { href: '', label: '' };
+      // remove espaços internos e bordas
+      let raw = String(link).trim().replace(/\s+/g, '');
+      // handle puro?
+      if (!/linkedin\.com/i.test(raw)) {
+        const handle = raw.replace(/^in\//i, '').replace(/^\//, '').replace(/\/.*$/, '');
+        if (!handle) return { href: '', label: '' };
+        return { href: `https://www.linkedin.com/in/${handle}`, label: handle };
       }
+      // sem esquema -> prefixa https
+      if (!/^https?:\/\//i.test(raw)) {
+        raw = 'https://' + raw.replace(/^\/+/, '');
+      }
+      let url;
+      try { url = new URL(raw); } catch { return { href: '', label: '' }; }
+      const pathname = url.pathname.replace(/\/+$/, '');
+      const parts = pathname.split('/').filter(Boolean);
+      let handle = '';
+      if (parts.length >= 2 && ['in','company','school','pub'].includes(parts[0].toLowerCase())) handle = parts[1];
+      else if (parts.length) handle = parts[parts.length - 1];
+      return { href: url.origin + (pathname || '/'), label: handle || url.host };
     }
 
-    function baixarImagem() {
-      const container = document.getElementById('assinatura-container');
-      html2canvas(container, {
-        allowTaint: true,
-        useCORS: true,
-        backgroundColor: null,
-      }).then((canvas) => {
-        const link = document.createElement('a');
-        link.download = 'assinatura_frota162.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+    // ===== Editor de foto (pan/zoom com máscara circular) =====
+    const editorBackdrop = document.getElementById('editor-backdrop');
+    const editorCanvas  = document.getElementById('editor-canvas');
+    const zoomInput     = document.getElementById('zoom');
+    const btnEditarFoto = document.getElementById('btnEditarFoto');
+    const btnApply      = document.getElementById('editor-apply');
+    const btnClose      = document.getElementById('editor-close');
+
+    function openEditor(img) {
+      editor.canvas = editorCanvas;
+      editor.ctx = editor.canvas.getContext('2d');
+      editor.img = img;
+
+      // Ajuste inicial: imagem "cover" no canvas
+      const cw = editor.canvas.width, ch = editor.canvas.height;
+      const scaleX = cw / img.width;
+      const scaleY = ch / img.height;
+      editor.baseFit = Math.max(scaleX, scaleY);
+      editor.scale = editor.baseFit;
+      zoomInput.value = editor.scale.toFixed(2);
+      // centraliza
+      editor.offsetX = (cw - img.width * editor.scale) / 2;
+      editor.offsetY = (ch - img.height * editor.scale) / 2;
+
+      editorBackdrop.style.display = 'flex';
+      drawEditor();
+    }
+
+    function closeEditor(){ editorBackdrop.style.display='none'; }
+
+    function drawEditor() {
+      const ctx = editor.ctx;
+      const cw = editor.canvas.width, ch = editor.canvas.height;
+      ctx.clearRect(0,0,cw,ch);
+
+      // desenha imagem com pan+zoom
+      ctx.save();
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(editor.img, editor.offsetX, editor.offsetY, editor.img.width*editor.scale, editor.img.height*editor.scale);
+      ctx.restore();
+
+      // Máscara circular de preview (só visual)
+      const r = Math.min(cw, ch) * 0.42; // raio do círculo (ajuste visual)
+      const cx = cw/2, cy = ch/2;
+
+      // overlay escuro + "janela" circular
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.fillRect(0,0,cw,ch);
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // borda do círculo
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI*2);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#F9401B';
+      ctx.stroke();
+    }
+
+    // drag
+    editorCanvas.addEventListener('mousedown', e => {
+      editor.dragging = true;
+      editor.lastX = e.offsetX;
+      editor.lastY = e.offsetY;
+    });
+    window.addEventListener('mouseup', ()=> editor.dragging=false);
+    editorCanvas.addEventListener('mousemove', e => {
+      if(!editor.dragging) return;
+      const dx = e.offsetX - editor.lastX;
+      const dy = e.offsetY - editor.lastY;
+      editor.offsetX += dx;
+      editor.offsetY += dy;
+      editor.lastX = e.offsetX;
+      editor.lastY = e.offsetY;
+      drawEditor();
+    });
+    // zoom
+    zoomInput.addEventListener('input', e => {
+      const newScale = Math.max(editor.minScale, Math.min(editor.maxScale, parseFloat(e.target.value) || editor.scale));
+      // zoom mantendo posição aparente (pivot no centro do canvas)
+      const cw = editor.canvas.width, ch = editor.canvas.height;
+      const cx = cw/2, cy = ch/2;
+      // coordenadas da imagem antes
+      const relX = (cx - editor.offsetX) / editor.scale;
+      const relY = (cy - editor.offsetY) / editor.scale;
+      editor.scale = newScale;
+      editor.offsetX = cx - relX * editor.scale;
+      editor.offsetY = cy - relY * editor.scale;
+      drawEditor();
+    });
+
+    // aplica recorte: exporta um PNG circular 128x128
+    btnApply.addEventListener('click', () => {
+  const size = 128; // tamanho final do avatar circular (deve bater com o usado na assinatura)
+  const out = document.createElement('canvas');
+  out.width = size; out.height = size;
+  const ctx = out.getContext('2d');
+
+  // === Geometria do preview (use EXACTAMENTE os mesmos valores do drawEditor) ===
+  const cw = editor.canvas.width;
+  const ch = editor.canvas.height;
+  const cx = cw / 2;
+  const cy = ch / 2;
+  const r  = Math.min(cw, ch) * 0.42; // MESMO 0.42 usado no drawEditor()
+
+  // Escala para mapear o disco de diâmetro 2r -> size
+  const k = size / (2 * r);
+
+  // Estado atual do editor (imagem já com pan/zoom no preview)
+  const S = editor.scale;
+  const drawW = editor.img.width  * S;
+  const drawH = editor.img.height * S;
+
+  // Queremos que o ponto (cx,cy) do preview caia exatamente no centro do out (size/2,size/2)
+  // Derivação: X_out = size/2 + (X_preview - cx) * k
+  // Para a imagem, X_preview = editor.offsetX + u*S  ->  offset_out = size/2 + (editor.offsetX - cx) * k
+  const outOffsetX = (size / 2) + (editor.offsetX - cx) * k;
+  const outOffsetY = (size / 2) + (editor.offsetY - cy) * k;
+
+  ctx.save();
+  // Clipa em círculo
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+
+  // Desenha a imagem com a escala composta S*k e offsets calculados
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(
+    editor.img,
+    outOffsetX, outOffsetY,
+    drawW * k, drawH * k
+  );
+
+  ctx.restore();
+
+  // DataURL final (PNG com transparência fora do círculo)
+  croppedPhotoData = out.toDataURL('image/png');
+  closeEditor();
+});
+
+
+    btnClose.addEventListener('click', closeEditor);
+    editorBackdrop.addEventListener('click', (e)=>{ if(e.target===editorBackdrop) closeEditor(); });
+
+    // ===== Helpers =====
+    function loadImageFile(file){
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = e => { img.onload = ()=> resolve(img); img.onerror = reject; img.src = e.target.result; };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
     }
-  </script>
+
+// ===== Assinatura =====
+function gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSrc) {
+  const telefoneRaw = telefone ? telefone.replace(/\D/g, '') : '';
+  const telLink = isWhatsapp
+    ? (telefoneRaw ? `https://wa.me/${telefoneRaw}` : '')
+    : (telefoneRaw ? `tel:+55${telefoneRaw}` : '');
+  const iconTel = isWhatsapp
+    ? 'https://i.imgur.com/gdgc4KI.png'
+    : 'https://i.imgur.com/RFj4ysj.png';
+
+  // imagens
+  const fotoHTML = fotoSrc || 'https://via.placeholder.com/128x128.png?text=Foto';
+  const logoFrota = 'https://i.imgur.com/ZAtbrph.png'; // Frota 162
+  const iconInsta  = 'https://i.imgur.com/Xsb9Sng.png';
+  const iconFace   = 'https://i.imgur.com/lfysxTa.png';
+  const iconLinked = 'https://i.imgur.com/Z51dBPM.png';
+  const iconWeb    = 'https://i.imgur.com/Vv3PICw.png';
+
+  // 3 selos (PLACEHOLDER usando o mesmo link do logo da Frota):
+  const apoios = [
+    'https://i.imgur.com/bMja3vS.jpeg', // Scale Up
+    'https://i.imgur.com/1DbXGH3.png',  // ACE
+    'https://i.imgur.com/cd3vOMl.png'   // Cubo
+  ];
+
+  // LinkedIn normalizado
+  const { href: linkedinHref } = parseLinkedin(linkedin);
+
+  return `
+<table cellpadding="0" cellspacing="0" border="0" style="font-family:Montserrat,Arial,sans-serif;font-size:14px;color:#2E3233;width:700px;max-width:100%;background:#fff;">
+  <tr>
+    <td style="padding:18px 14px 10px 18px;width:150px;vertical-align:top;font-size:0;">
+      <img src="${fotoHTML}" alt="Foto" style="width:128px;height:128px;border-radius:50%;object-fit:cover;display:block;border:none;outline:none;">
+    </td>
+    <td style="padding:18px 18px 10px 0;vertical-align:top;">
+      <div style="font-weight:700;font-size:22px;line-height:1.2;color:#2E3233;margin:0 0 6px 0;">
+        ${nome || 'Nome Sobrenome'}
+      </div>
+
+      <!-- Cargo com ícone do LinkedIn linkado (só o ícone) -->
+      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 0 6px 0;">
+        <tr>
+          <td style="padding:0 8px 0 0;vertical-align:middle;">
+            ${linkedinHref
+              ? `<a href="${linkedinHref}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:none;">
+                   <img src="${iconLinked}" alt="LinkedIn" style="height:18px;display:block;border:none;">
+                 </a>`
+              : `<img src="${iconLinked}" alt="LinkedIn" style="height:18px;display:block;border:none;">`
+            }
+          </td>
+          <td style="padding:0;vertical-align:middle;">
+            <span style="font-weight:600;color:#F9401B;">${cargo || 'Cargo'}</span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Telefone com ícone clicável junto -->
+      <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0;">
+        <tr>
+          <td style="padding:0;vertical-align:middle;">
+            ${telLink
+              ? `<a href="${telLink}" style="color:#2E3233;text-decoration:none;display:flex;align-items:center;">
+                   <img src="${iconTel}" alt="Telefone" style="height:18px;display:inline-block;margin-right:5px;border:none;">
+                   ${telefone || '(11) 99999-9999'}
+                 </a>`
+              : `<span style="color:#2E3233;display:flex;align-items:center;">
+                   <img src="${iconTel}" alt="Telefone" style="height:18px;display:inline-block;margin-right:5px;border:none;">
+                   ${telefone || '(11) 99999-9999'}
+                 </span>`
+            }
+          </td>
+        </tr>
+      </table>
+
+      <!-- Ícones sociais -->
+      <table cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:41px 0 0 0;border-collapse:collapse;">
+        <tr>
+          <td style="text-align:right;vertical-align:middle;white-space:nowrap;">
+            <a href="https://www.frota162.com.br" target="_blank" style="display:inline-block;margin-left:12px;">
+              <img src="${iconWeb}" alt="Site" style="height:20px;display:block;border:none;">
+            </a>
+            <a href="https://www.linkedin.com/company/frota-162" target="_blank" style="display:inline-block;margin-left:12px;">
+              <img src="${iconLinked}" alt="LinkedIn" style="height:20px;display:block;border:none;">
+            </a>
+            <a href="https://www.instagram.com/frota162" target="_blank" style="display:inline-block;margin-left:12px;">
+              <img src="${iconInsta}" alt="Instagram" style="height:20px;display:block;border:none;">
+            </a>
+            <a href="https://www.facebook.com/frota162" target="_blank" style="display:inline-block;margin-left:12px;">
+              <img src="${iconFace}" alt="Facebook" style="height:20px;display:block;border:none;">
+            </a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Barra laranja -->
+  <tr>
+    <td colspan="2" style="padding:0;">
+      <div style="height:6px;background-color:#F9401B;width:100%;"></div>
+    </td>
+  </tr>
+
+<!-- Linha de logos -->
+<tr>
+  <td colspan="2" style="padding:12px 18px;">
+    <table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
+      <tr>
+        <!-- Logo Frota alinhado à esquerda e clicável -->
+        <td style="vertical-align:middle;width:1%;white-space:nowrap;">
+          <a href="https://www.frota162.com.br" target="_blank" style="display:inline-block;">
+            <img src="${logoFrota}" alt="Frota 162" style="height:24px;display:inline-block;border:none;outline:none;">
+          </a>
+        </td>
+
+        <!-- Selos centralizados como grupo e clicáveis -->
+        <td style="width:99%;text-align:center;vertical-align:middle;">
+          ${apoios.map((src, i) => {
+            // links de exemplo: substitua pelos reais
+            const links = [
+              'https://endeavor.org.br/programa-scale-up/',
+              'https://aceventures.com.br/',
+              'https://cubo.network/'
+            ];
+            return `
+              <a href="${links[i]}" target="_blank" style="display:inline-block;margin:${i>0?'0 0 0 16px':'0'};">
+                <img src="${src}" alt="Selo ${i+1}" style="height:22px;display:inline-block;border:none;outline:none;vertical-align:middle;">
+              </a>
+            `;
+          }).join('')}
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
 
 
-<div style="width: 100%; max-width: 800px; margin-top: 40px; padding: 20px; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); font-family: 'Montserrat', sans-serif;">
-  <h3 style="color: #2E3233;">🛠️ Como usar sua assinatura</h3>
+</table>
+  `.trim();
+}
 
-  <p style="margin-top: 10px;">Após gerar e baixar sua imagem, siga o passo a passo abaixo para usar no seu e-mail:</p>
+    // ===== Fluxo principal =====
+    const fileInput = document.getElementById('foto');
+    fileInput.addEventListener('change', async () => {
+      const f = fileInput.files && fileInput.files[0];
+      if (!f) { originalImage=null; btnEditarFoto.disabled = true; return; }
+      try {
+        originalImage = await loadImageFile(f);
+        btnEditarFoto.disabled = false;
+        // opcional: já abre o editor assim que carrega
+        openEditor(originalImage);
+      } catch (e) {
+        console.warn('Erro ao carregar imagem:', e);
+        originalImage = null;
+        btnEditarFoto.disabled = true;
+      }
+    });
 
-  <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+    btnEditarFoto.addEventListener('click', ()=>{
+      if (originalImage) openEditor(originalImage);
+    });
 
-    <div style="flex: 1; min-width: 240px;">
-      <button onclick="toggleInstrucoes('gmail-instrucoes')" style="background-color: #F9401B; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%;">📩 Instruções para Gmail</button>
-    </div>
+    async function atualizarPreview() {
+      const nome = document.getElementById('nome').value.trim();
+      const cargo = document.getElementById('cargo').value.trim();
+      const telefone = document.getElementById('telefone').value.trim();
+      const linkedin = document.getElementById('linkedin').value.trim();
+      const isWhatsapp = document.getElementById('whatsapp').checked;
 
-    <div style="flex: 1; min-width: 240px;">
-      <button onclick="toggleInstrucoes('hubspot-instrucoes')" style="background-color: #284516; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%;">📊 Instruções para HubSpot</button>
-    </div>
+      // Se o usuário já aplicou recorte, usamos a imagem recortada;
+      // senão, se tem arquivo selecionado mas não recortou, abrimos o editor;
+      // se não tem nada, usamos placeholder.
+      if (!croppedPhotoData && originalImage && editorBackdrop.style.display !== 'flex') {
+        openEditor(originalImage);
+        return; // usuário faz o recorte e depois clica gerar de novo
+      }
 
-  </div>
-
-  <!-- Gmail Instructions -->
-  <div id="gmail-instrucoes" style="display: none; margin-top: 30px;">
-    <h4 style="color: #2E3233;">📩 Como adicionar no Gmail:</h4>
-    <ol style="padding-left: 20px; margin-top: 10px;">
-      <li>Acesse o Gmail e clique no ícone de engrenagem (⚙️).</li>
-      <li>Clique em <strong>“Mostrar todas as configurações”</strong>.</li>
-      <li>Na aba <strong>“Geral”</strong>, desça até <strong>“Assinatura”</strong>.</li>
-      <li>Clique em <strong>“+ Criar novo”</strong> e dê um nome à assinatura.</li>
-      <li>Clique no ícone <strong>"Inserir imagem"</strong>.</li>
-      <li>Clique na aba <strong>"Google Drive"</strong>.</li>
-      <li>Clique em <strong>"Fazer upload"</strong> e em <strong>"Procurar"</strong>.</li>
-      <li>Após inserir a imagem, clique em <strong>"Permitir"</strong> na caixa de diálogo.</li>
-      <li>Com a imagem carregada, clique sobre ela e após selecione a opção <strong>"Grande"</strong> para redimensioná-la.</li>
-      <li>Com a assinatura criada, defina ela como padrão para uso em novos e-mails e respostas/encaminhamentos.</li>
-      <li>Role até o fim e clique em <strong>“Salvar alterações”</strong>.</li>
-    </ol>
-    <img src="https://i.imgur.com/0prBUPu.png" alt="Passo a passo Gmail" style="max-width: 100%; border-radius: 10px; margin-top: 10px;" />
-  </div>
-
-  <!-- HubSpot Instructions -->
-  <div id="hubspot-instrucoes" style="display: none; margin-top: 30px;">
-    <h4 style="color: #2E3233;">📊 Como adicionar no HubSpot:</h4>
-    <ol style="padding-left: 20px; margin-top: 10px;">
-      <li>Entre em sua conta HubSpot.</li>
-      <li>No canto superior direito, clique na sua foto e vá em <strong>“Perfil e preferências”</strong>.</li>
-      <li>No menu acima, selecione a aba <strong>“E-mail”</strong>.</li>
-      <li>Clique em <strong>“Gerenciar assinaturas de e-mail”</strong>.</li>
-      <li>Clique no ícone <strong>"Inserir imagem"</strong>.</li>
-      <li>Clique no botão <strong>"Carregar"</strong> e selecione a imagem no seu computador.</li>
-      <li>Com a imagem carregada, clique sobre ela.</li>
-      <li>Clique em <strong>Salvar</strong>.</li>
-    </ol>
-    <img src="https://i.imgur.com/n1T2h90.png" alt="Passo a passo HubSpot" style="max-width: 100%; border-radius: 10px; margin-top: 10px;" />
-  </div>
-</div>
-
-<script>
-  function toggleInstrucoes(id) {
-    const el = document.getElementById(id);
-    if (el.style.display === 'block') {
-      el.style.display = 'none';
-    } else {
-      el.style.display = 'block';
+      const fotoSrc = croppedPhotoData || ''; // se vazio, gerarAssinaturaHTML usa placeholder
+      const html = gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSrc);
+      const preview = document.getElementById('assinatura-preview');
+      preview.innerHTML = html;
+      document.getElementById('btnCopiar').style.display = 'inline-block';
     }
-  }
-</script>
 
+    async function copiarAssinatura() {
+      const preview = document.getElementById('assinatura-preview');
+      if (!preview.innerHTML.trim()) { alert('Gere a assinatura antes de copiar!'); return; }
+      try {
+        if (navigator.clipboard && window.ClipboardItem) {
+          const html = preview.innerHTML;
+          const item = new ClipboardItem({
+            'text/html': new Blob([html], { type: 'text/html' }),
+            'text/plain': new Blob([preview.innerText], { type: 'text/plain' })
+          });
+          await navigator.clipboard.write([item]);
+          alert('Assinatura copiada! Cole no Gmail.');
+          return;
+        }
+      } catch(e){ console.warn('Clipboard API falhou, fallback...', e); }
+      const range = document.createRange();
+      range.selectNodeContents(preview);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); alert('Assinatura copiada! Cole no Gmail.'); }
+      catch(err){ alert('Erro ao copiar. Copie manualmente.'); }
+      sel.removeAllRanges();
+    }
 
+    document.getElementById('btnGerar').addEventListener('click', atualizarPreview);
+    document.getElementById('btnCopiar').addEventListener('click', copiarAssinatura);
+  </script>
 </body>
 </html>
