@@ -63,7 +63,9 @@
     <div id="buttons-container">
       <button id="btnGerar" type="button" class="btn">Gerar assinatura</button>
       <button id="btnEditarFoto" type="button" class="btn" disabled>Editar foto</button>
-      <button id="btnCopiar" type="button" class="btn">Copiar</button>
+      <button id="btnCopiar" type="button" class="btn">Copiar (Gmail)</button>
+      <button id="btnCopiarHTML" type="button" class="btn" style="background:#63B070; display:none;">Copiar HTML (HubSpot)</button>
+
     </div>
   </div>
 
@@ -470,6 +472,7 @@ function gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSr
       const preview = document.getElementById('assinatura-preview');
       preview.innerHTML = html;
       document.getElementById('btnCopiar').style.display = 'inline-block';
+      document.getElementById('btnCopiarHTML').style.display = 'inline-block';
     }
 
     async function copiarAssinatura() {
@@ -497,8 +500,129 @@ function gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSr
       sel.removeAllRanges();
     }
 
+function copiarHTMLHubSpot() {
+  try {
+    const nome       = document.getElementById('nome')?.value || '';
+    const cargo      = document.getElementById('cargo')?.value || '';
+    const telefone   = document.getElementById('telefone')?.value || '';
+    const linkedin   = document.getElementById('linkedin')?.value || '';
+    const isWhatsapp = !!document.getElementById('whatsapp')?.checked;
+    const fotoSrc    = croppedPhotoData || '';
+
+    const html = gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSrc);
+
+    if (navigator.clipboard && window.ClipboardItem) {
+      const data = {
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([html], { type: 'text/plain' }),
+      };
+      const item = new ClipboardItem(data);
+      navigator.clipboard.write([item]).then(() => {
+        alert('HTML copiado (HTML + texto). Pode colar no HubSpot.');
+      }).catch((err) => {
+        console.warn('ClipboardItem write falhou, usando fallback:', err);
+        fallbackCopy(html);
+      });
+      return;
+    }
+    fallbackCopy(html);
+  } catch (e) {
+    console.error('Erro ao copiar HTML:', e);
+    alert('Não foi possível copiar. Veja o console para detalhes.');
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      const ok = document.execCommand('copy');
+      if (ok) {
+        alert('HTML copiado (texto puro). Se colar no Bloco de Notas, verá o código.');
+      } else {
+        throw new Error('execCommand retornou false');
+      }
+    } catch (err) {
+      console.error('Fallback execCommand falhou:', err);
+      alert('Não consegui copiar automaticamente. Selecione e copie manualmente.');
+    } finally {
+      document.body.removeChild(ta);
+    }
+  }
+}
+
     document.getElementById('btnGerar').addEventListener('click', atualizarPreview);
     document.getElementById('btnCopiar').addEventListener('click', copiarAssinatura);
+    document.getElementById('btnCopiarHTML').addEventListener('click', copiarHTMLHubSpot);
+
+
   </script>
+
+<div style="width: 100%; max-width: 800px; margin-top: 40px; padding: 20px; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); font-family: 'Montserrat', sans-serif;">
+  <h3 style="color: #2E3233;">🛠️ Como usar sua assinatura</h3>
+
+  <p style="margin-top: 10px;">Após gerar e baixar sua imagem, siga o passo a passo abaixo para usar no seu e-mail:</p>
+
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+
+    <div style="flex: 1; min-width: 240px;">
+      <button onclick="toggleInstrucoes('gmail-instrucoes')" style="background-color: #F9401B; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%;">📩 Instruções para Gmail</button>
+    </div>
+
+    <div style="flex: 1; min-width: 240px;">
+      <button onclick="toggleInstrucoes('hubspot-instrucoes')" style="background-color: #284516; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%;">📊 Instruções para HubSpot</button>
+    </div>
+
+  </div>
+
+  <!-- Gmail Instructions -->
+  <div id="gmail-instrucoes" style="display: none; margin-top: 30px;">
+    <h4 style="color: #2E3233;">📩 Como adicionar no Gmail:</h4>
+    <ol style="padding-left: 20px; margin-top: 10px;">
+      <li>Acesse o Gmail e clique no ícone de engrenagem (⚙️);</li>
+      <li>Vá em <strong>“Ver todas as configurações”</strong>;</li>
+      <li>Na aba <strong>“Geral”</strong>, desça até <strong>“Assinatura”</strong>;</li>
+      <li>Clique em <strong>“Criar nova”</strong> e dê um nome à assinatura;</li>
+      <li>Cole os dados da assinatura criada;</li>
+      <li>Em <strong>"Padrões de assinatura"</strong>, selecione a assinatura nos dois campos;</li>	
+      <li>Role até o fim e clique em <strong>“Salvar alterações”</strong>.</li>
+    </ol>
+     <p>Exemplo em vídeo:</p>
+  <video width="100%" controls>
+    <source src="https://i.imgur.com/a9ME82g.mp4" type="video/mp4">
+    Seu navegador não suporta vídeo.
+  </video>
+  </div>
+
+  <!-- HubSpot Instructions -->
+  <div id="hubspot-instrucoes" style="display: none; margin-top: 30px;">
+    <h4 style="color: #2E3233;">📊 Como adicionar no HubSpot:</h4>
+    <ol style="padding-left: 20px; margin-top: 10px;">
+      <li>Entre em sua conta HubSpot;</li>
+      <li>No menu superior direito, clique no ícone de engrenagem (⚙️);</li>
+      <li>Agora clique na aba <strong>“E-mail”</strong>;</li>
+      <li>Escolha a opção <strong>“Gerenciar assinaturas de e-mail”</strong>;</li>
+      <li>Na janela que abriu, clique na opção <strong>HTML</strong> no canto superior direito;</li>
+      <li>Cole o código HTML que você copiou.</li>
+      <li>Clique em <strong>Salvar</strong>;</li>
+      <li>Após a mensagem de confirmação, feche a janela pop-up;</li>
+    </ol>
+    <img src="https://i.imgur.com/97vhOti.png" alt="Passo a passo HubSpot" style="max-width: 100%; border-radius: 10px; margin-top: 10px;" />
+  </div>
+</div>
+<script>
+  function toggleInstrucoes(id) {
+    const el = document.getElementById(id);
+    if (el.style.display === 'block') {
+      el.style.display = 'none';
+    } else {
+      el.style.display = 'block';
+    }
+  }
+</script>
 </body>
 </html>
