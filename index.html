@@ -65,7 +65,6 @@
       <button id="btnEditarFoto" type="button" class="btn" disabled>Editar foto</button>
       <button id="btnCopiar" type="button" class="btn">Copiar (Gmail)</button>
       <button id="btnCopiarHTML" type="button" class="btn" style="background:#63B070; display:none;">Copiar HTML (HubSpot)</button>
-
     </div>
   </div>
 
@@ -104,8 +103,31 @@
       baseFit: 1,
     };
 
+    function formatarTelefone(telefone) {
+      if (!telefone) return '';
+      
+      // Remove todos os caracteres não numéricos
+      const numeros = telefone.replace(/\D/g, '');
+      
+      // Se não tem números suficientes, retorna vazio
+      if (numeros.length < 10) return '';
+      
+      // Aplica a máscara (XX)XXXXX-XXXX
+      if (numeros.length === 11) {
+        // Celular: (XX)XXXXX-XXXX
+        return `(${numeros.slice(0, 2)})${numeros.slice(2, 7)}-${numeros.slice(7)}`;
+      } else if (numeros.length === 10) {
+        // Fixo: (XX)XXXX-XXXX
+        return `(${numeros.slice(0, 2)})${numeros.slice(2, 6)}-${numeros.slice(6)}`;
+      }
+      
+      // Se tem mais de 11 dígitos, pega apenas os primeiros 11
+      return `(${numeros.slice(0, 2)})${numeros.slice(2, 7)}-${numeros.slice(7, 11)}`;
+    }
+
     // ===== Util: parse LinkedIn robusto =====
     function parseLinkedin(link) {
+      console.log("[v0] parseLinkedin called with:", link); // Added debug log
       if (!link) return { href: '', label: '' };
       // remove espaços internos e bordas
       let raw = String(link).trim().replace(/\s+/g, '');
@@ -226,55 +248,54 @@
 
     // aplica recorte: exporta um PNG circular 128x128
     btnApply.addEventListener('click', () => {
-  const size = 128; // tamanho final do avatar circular (deve bater com o usado na assinatura)
-  const out = document.createElement('canvas');
-  out.width = size; out.height = size;
-  const ctx = out.getContext('2d');
+      const size = 128; // tamanho final do avatar circular (deve bater com o usado na assinatura)
+      const out = document.createElement('canvas');
+      out.width = size; out.height = size;
+      const ctx = out.getContext('2d');
 
-  // === Geometria do preview (use EXACTAMENTE os mesmos valores do drawEditor) ===
-  const cw = editor.canvas.width;
-  const ch = editor.canvas.height;
-  const cx = cw / 2;
-  const cy = ch / 2;
-  const r  = Math.min(cw, ch) * 0.42; // MESMO 0.42 usado no drawEditor()
+      // === Geometria do preview (use EXACTAMENTE os mesmos valores do drawEditor) ===
+      const cw = editor.canvas.width;
+      const ch = editor.canvas.height;
+      const cx = cw / 2;
+      const cy = ch / 2;
+      const r  = Math.min(cw, ch) * 0.42; // MESMO 0.42 usado no drawEditor()
 
-  // Escala para mapear o disco de diâmetro 2r -> size
-  const k = size / (2 * r);
+      // Escala para mapear o disco de diâmetro 2r -> size
+      const k = size / (2 * r);
 
-  // Estado atual do editor (imagem já com pan/zoom no preview)
-  const S = editor.scale;
-  const drawW = editor.img.width  * S;
-  const drawH = editor.img.height * S;
+      // Estado atual do editor (imagem já com pan/zoom no preview)
+      const S = editor.scale;
+      const drawW = editor.img.width  * S;
+      const drawH = editor.img.height * S;
 
-  // Queremos que o ponto (cx,cy) do preview caia exatamente no centro do out (size/2,size/2)
-  // Derivação: X_out = size/2 + (X_preview - cx) * k
-  // Para a imagem, X_preview = editor.offsetX + u*S  ->  offset_out = size/2 + (editor.offsetX - cx) * k
-  const outOffsetX = (size / 2) + (editor.offsetX - cx) * k;
-  const outOffsetY = (size / 2) + (editor.offsetY - cy) * k;
+      // Queremos que o ponto (cx,cy) do preview caia exatamente no centro do out (size/2,size/2)
+      // Derivação: X_out = size/2 + (X_preview - cx) * k
+      // Para a imagem, X_preview = editor.offsetX + u*S  ->  offset_out = size/2 + (editor.offsetX - cx) * k
+      const outOffsetX = (size / 2) + (editor.offsetX - cx) * k;
+      const outOffsetY = (size / 2) + (editor.offsetY - cy) * k;
 
-  ctx.save();
-  // Clipa em círculo
-  ctx.beginPath();
-  ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.clip();
+      ctx.save();
+      // Clipa em círculo
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
 
-  // Desenha a imagem com a escala composta S*k e offsets calculados
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(
-    editor.img,
-    outOffsetX, outOffsetY,
-    drawW * k, drawH * k
-  );
+      // Desenha a imagem com a escala composta S*k e offsets calculados
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(
+        editor.img,
+        outOffsetX, outOffsetY,
+        drawW * k, drawH * k
+      );
 
-  ctx.restore();
+      ctx.restore();
 
-  // DataURL final (PNG com transparência fora do círculo)
-  croppedPhotoData = out.toDataURL('image/png');
-  closeEditor();
-});
-
+      // DataURL final (PNG com transparência fora do círculo)
+      croppedPhotoData = out.toDataURL('image/png');
+      closeEditor();
+    });
 
     btnClose.addEventListener('click', closeEditor);
     editorBackdrop.addEventListener('click', (e)=>{ if(e.target===editorBackdrop) closeEditor(); });
@@ -290,35 +311,41 @@
       });
     }
 
-// ===== Assinatura =====
-function gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSrc) {
-  const telefoneRaw = telefone ? telefone.replace(/\D/g, '') : '';
-  const telLink = isWhatsapp
-    ? (telefoneRaw ? `https://wa.me/${telefoneRaw}` : '')
-    : (telefoneRaw ? `tel:+55${telefoneRaw}` : '');
-  const iconTel = isWhatsapp
-    ? 'https://i.imgur.com/gdgc4KI.png'
-    : 'https://i.imgur.com/RFj4ysj.png';
+    // ===== Assinatura =====
+    function gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSrc) {
+      console.log("[v0] gerarAssinaturaHTML called with:", { nome, cargo, telefone, linkedin, isWhatsapp }); // Added debug log
+      
+      const telefoneFormatado = formatarTelefone(telefone);
+      
+      const telefoneRaw = telefoneFormatado ? telefoneFormatado.replace(/\D/g, '') : '';
+      const telLink = isWhatsapp
+        ? (telefoneRaw ? `https://wa.me/${telefoneRaw}` : '')
+        : (telefoneRaw ? `tel:+55${telefoneRaw}` : '');
+      const iconTel = isWhatsapp
+        ? 'https://i.imgur.com/gdgc4KI.png'
+        : 'https://i.imgur.com/RFj4ysj.png';
 
-  // imagens
-  const fotoHTML = fotoSrc || 'https://via.placeholder.com/128x128.png?text=Foto';
-  const logoFrota = 'https://i.imgur.com/ZAtbrph.png'; // Frota 162
-  const iconInsta  = 'https://i.imgur.com/Xsb9Sng.png';
-  const iconFace   = 'https://i.imgur.com/lfysxTa.png';
-  const iconLinked = 'https://i.imgur.com/Z51dBPM.png';
-  const iconWeb    = 'https://i.imgur.com/Vv3PICw.png';
+      // imagens
+      const fotoHTML = fotoSrc || 'https://via.placeholder.com/128x128.png?text=Foto';
+      const logoFrota = 'https://i.imgur.com/ZAtbrph.png'; // Frota 162
+      const iconInsta  = 'https://i.imgur.com/Xsb9Sng.png';
+      const iconFace   = 'https://i.imgur.com/lfysxTa.png';
+      const iconLinked = 'https://i.imgur.com/Z51dBPM.png';
+      const iconWeb    = 'https://i.imgur.com/Vv3PICw.png';
 
-  // 3 selos (PLACEHOLDER usando o mesmo link do logo da Frota):
-  const apoios = [
-    'https://i.imgur.com/bMja3vS.jpeg', // Scale Up
-    'https://i.imgur.com/1DbXGH3.png',  // ACE
-    'https://i.imgur.com/cd3vOMl.png'   // Cubo
-  ];
+      // 3 selos (PLACEHOLDER usando o mesmo link do logo da Frota):
+      const apoios = [
+        'https://i.imgur.com/bMja3vS.jpeg', // Scale Up
+        'https://i.imgur.com/1DbXGH3.png',  // ACE
+        'https://i.imgur.com/cd3vOMl.png'   // Cubo
+      ];
 
-  // LinkedIn normalizado
-  const { href: linkedinHref } = parseLinkedin(linkedin);
+      // LinkedIn normalizado
+      const { href: linkedinHref } = parseLinkedin(linkedin);
+      console.log("[v0] LinkedIn parsed:", { linkedinHref }); // Added debug log
+      console.log("[v0] Telefone processed:", { telefone, telefoneRaw, telLink }); // Added debug log
 
-  return `
+      return `
 <table cellpadding="0" cellspacing="0" border="0" style="font-family:Montserrat,Arial,sans-serif;font-size:14px;color:#2E3233;width:700px;max-width:100%;background:#fff;">
   <tr>
     <td style="padding:18px 14px 10px 18px;width:150px;vertical-align:top;font-size:0;">
@@ -329,40 +356,45 @@ function gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSr
         ${nome || 'Nome Sobrenome'}
       </div>
 
-      <!-- Cargo com ícone do LinkedIn linkado (só o ícone) -->
+      <!-- Cargo com ícone do LinkedIn linkado (só aparece se houver LinkedIn) -->
+      ${linkedinHref ? `
       <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 0 6px 0;">
         <tr>
           <td style="padding:0 8px 0 0;vertical-align:middle;">
-            ${linkedinHref
-              ? `<a href="${linkedinHref}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:none;">
-                   <img src="${iconLinked}" alt="LinkedIn" style="height:18px;display:block;border:none;">
-                 </a>`
-              : `<img src="${iconLinked}" alt="LinkedIn" style="height:18px;display:block;border:none;">`
-            }
+            <a href="${linkedinHref}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;border:none;">
+              <img src="${iconLinked}" alt="LinkedIn" style="height:18px;display:block;border:none;">
+            </a>
           </td>
           <td style="padding:0;vertical-align:middle;">
             <span style="font-weight:600;color:#F9401B;">${cargo || 'Cargo'}</span>
           </td>
         </tr>
       </table>
+      ` : `
+      <div style="font-weight:600;color:#F9401B;margin:0 0 6px 0;">
+        ${cargo || 'Cargo'}
+      </div>
+      `}
 
-      <!-- Telefone com ícone clicável junto -->
+      <!-- Telefone com ícone clicável junto (só aparece se houver telefone) -->
+      ${telefoneFormatado ? `
       <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0;">
         <tr>
           <td style="padding:0;vertical-align:middle;">
             ${telLink
               ? `<a href="${telLink}" style="color:#2E3233;text-decoration:none;display:flex;align-items:center;">
                    <img src="${iconTel}" alt="Telefone" style="height:18px;display:inline-block;margin-right:5px;border:none;">
-                   ${telefone || '(11) 99999-9999'}
+                   ${telefoneFormatado}
                  </a>`
               : `<span style="color:#2E3233;display:flex;align-items:center;">
                    <img src="${iconTel}" alt="Telefone" style="height:18px;display:inline-block;margin-right:5px;border:none;">
-                   ${telefone || '(11) 99999-9999'}
+                   ${telefoneFormatado}
                  </span>`
             }
           </td>
         </tr>
       </table>
+      ` : ''}
 
       <!-- Ícones sociais -->
       <table cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:41px 0 0 0;border-collapse:collapse;">
@@ -393,43 +425,41 @@ function gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSr
     </td>
   </tr>
 
-<!-- Linha de logos -->
-<tr>
-  <td colspan="2" style="padding:12px 18px;">
-    <table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
-      <tr>
-        <!-- Logo Frota alinhado à esquerda e clicável -->
-        <td style="vertical-align:middle;width:1%;white-space:nowrap;">
-          <a href="https://www.frota162.com.br" target="_blank" style="display:inline-block;">
-            <img src="${logoFrota}" alt="Frota 162" style="height:24px;display:inline-block;border:none;outline:none;">
-          </a>
-        </td>
+  <!-- Linha de logos -->
+  <tr>
+    <td colspan="2" style="padding:12px 18px;">
+      <table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
+        <tr>
+          <!-- Logo Frota alinhado à esquerda e clicável -->
+          <td style="vertical-align:middle;width:1%;white-space:nowrap;">
+            <a href="https://www.frota162.com.br" target="_blank" style="display:inline-block;">
+              <img src="${logoFrota}" alt="Frota 162" style="height:24px;display:inline-block;border:none;outline:none;">
+            </a>
+          </td>
 
-        <!-- Selos centralizados como grupo e clicáveis -->
-        <td style="width:99%;text-align:center;vertical-align:middle;">
-          ${apoios.map((src, i) => {
-            // links de exemplo: substitua pelos reais
-            const links = [
-              'https://endeavor.org.br/programa-scale-up/',
-              'https://aceventures.com.br/',
-              'https://cubo.network/'
-            ];
-            return `
-              <a href="${links[i]}" target="_blank" style="display:inline-block;margin:${i>0?'0 0 0 16px':'0'};">
-                <img src="${src}" alt="Selo ${i+1}" style="height:22px;display:inline-block;border:none;outline:none;vertical-align:middle;">
-              </a>
-            `;
-          }).join('')}
-        </td>
-      </tr>
-    </table>
-  </td>
-</tr>
-
-
+          <!-- Selos centralizados como grupo e clicáveis -->
+          <td style="width:99%;text-align:center;vertical-align:middle;">
+            ${apoios.map((src, i) => {
+              // links de exemplo: substitua pelos reais
+              const links = [
+                'https://endeavor.org.br/programa-scale-up/',
+                'https://aceventures.com.br/',
+                'https://cubo.network/'
+              ];
+              return `
+                <a href="${links[i]}" target="_blank" style="display:inline-block;margin:${i>0?'0 0 0 16px':'0'};">
+                  <img src="${src}" alt="Selo ${i+1}" style="height:22px;display:inline-block;border:none;outline:none;vertical-align:middle;">
+                </a>
+              `;
+            }).join('')}
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 </table>
   `.trim();
-}
+    }
 
     // ===== Fluxo principal =====
     const fileInput = document.getElementById('foto');
@@ -453,26 +483,35 @@ function gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSr
     });
 
     async function atualizarPreview() {
+      console.log("[v0] atualizarPreview called"); // Added debug log
+      
       const nome = document.getElementById('nome').value.trim();
       const cargo = document.getElementById('cargo').value.trim();
       const telefone = document.getElementById('telefone').value.trim();
       const linkedin = document.getElementById('linkedin').value.trim();
       const isWhatsapp = document.getElementById('whatsapp').checked;
 
+      console.log("[v0] Form values:", { nome, cargo, telefone, linkedin, isWhatsapp }); // Added debug log
+
       // Se o usuário já aplicou recorte, usamos a imagem recortada;
       // senão, se tem arquivo selecionado mas não recortou, abrimos o editor;
       // se não tem nada, usamos placeholder.
       if (!croppedPhotoData && originalImage && editorBackdrop.style.display !== 'flex') {
+        console.log("[v0] Opening editor for image crop"); // Added debug log
         openEditor(originalImage);
         return; // usuário faz o recorte e depois clica gerar de novo
       }
 
       const fotoSrc = croppedPhotoData || ''; // se vazio, gerarAssinaturaHTML usa placeholder
+      console.log("[v0] Generating signature with fotoSrc:", fotoSrc ? "custom image" : "placeholder"); // Added debug log
+      
       const html = gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSrc);
       const preview = document.getElementById('assinatura-preview');
       preview.innerHTML = html;
       document.getElementById('btnCopiar').style.display = 'inline-block';
       document.getElementById('btnCopiarHTML').style.display = 'inline-block';
+      
+      console.log("[v0] Signature generated successfully"); // Added debug log
     }
 
     async function copiarAssinatura() {
@@ -500,135 +539,77 @@ function gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSr
       sel.removeAllRanges();
     }
 
-function copiarHTMLHubSpot() {
-  try {
-    const nome       = document.getElementById('nome')?.value || '';
-    const cargo      = document.getElementById('cargo')?.value || '';
-    const telefone   = document.getElementById('telefone')?.value || '';
-    const linkedin   = document.getElementById('linkedin')?.value || '';
-    const isWhatsapp = !!document.getElementById('whatsapp')?.checked;
-    const fotoSrc    = croppedPhotoData || '';
+    function copiarHTMLHubSpot() {
+      try {
+        const nome       = document.getElementById('nome')?.value || '';
+        const cargo      = document.getElementById('cargo')?.value || '';
+        const telefone   = document.getElementById('telefone')?.value || '';
+        const linkedin   = document.getElementById('linkedin')?.value || '';
+        const isWhatsapp = !!document.getElementById('whatsapp')?.checked;
+        const fotoSrc    = croppedPhotoData || '';
 
-    const html = gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSrc);
+        const html = gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoSrc);
 
-    if (navigator.clipboard && window.ClipboardItem) {
-      const data = {
-        'text/html': new Blob([html], { type: 'text/html' }),
-        'text/plain': new Blob([html], { type: 'text/plain' }),
-      };
-      const item = new ClipboardItem(data);
-      navigator.clipboard.write([item]).then(() => {
-        alert('HTML copiado (HTML + texto). Pode colar no HubSpot.');
-      }).catch((err) => {
-        console.warn('ClipboardItem write falhou, usando fallback:', err);
+        if (navigator.clipboard && window.ClipboardItem) {
+          const data = {
+            'text/html': new Blob([html], { type: 'text/html' }),
+            'text/plain': new Blob([html], { type: 'text/plain' }),
+          };
+          const item = new ClipboardItem(data);
+          navigator.clipboard.write([item]).then(() => {
+            alert('HTML copiado (HTML + texto). Pode colar no HubSpot.');
+          }).catch((err) => {
+            console.warn('ClipboardItem write falhou, usando fallback:', err);
+            fallbackCopy(html);
+          });
+          return;
+        }
         fallbackCopy(html);
-      });
-      return;
-    }
-    fallbackCopy(html);
-  } catch (e) {
-    console.error('Erro ao copiar HTML:', e);
-    alert('Não foi possível copiar. Veja o console para detalhes.');
-  }
-
-  function fallbackCopy(text) {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'fixed';
-    ta.style.top = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    try {
-      const ok = document.execCommand('copy');
-      if (ok) {
-        alert('HTML copiado (texto puro). Se colar no Bloco de Notas, verá o código.');
-      } else {
-        throw new Error('execCommand retornou false');
+      } catch (e) {
+        console.error('Erro ao copiar HTML:', e);
+        alert('Não foi possível copiar. Veja o console para detalhes.');
       }
-    } catch (err) {
-      console.error('Fallback execCommand falhou:', err);
-      alert('Não consegui copiar automaticamente. Selecione e copie manualmente.');
-    } finally {
-      document.body.removeChild(ta);
     }
-  }
-}
 
-    document.getElementById('btnGerar').addEventListener('click', atualizarPreview);
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        const ok = document.execCommand('copy');
+        if (ok) {
+          alert('HTML copiado (texto puro). Se colar no Bloco de Notas, verá o código.');
+        } else {
+          throw new Error('execCommand retornou false');
+        }
+      } catch (err) {
+        console.error('Fallback execCommand falhou:', err);
+        alert('Não consegui copiar automaticamente. Selecione e copie manualmente.');
+      } finally {
+        document.body.removeChild(ta);
+      }
+    }
+
+    document.getElementById('btnGerar').addEventListener('click', () => {
+      console.log("[v0] Generate button clicked"); // Added debug log
+      atualizarPreview();
+    });
     document.getElementById('btnCopiar').addEventListener('click', copiarAssinatura);
     document.getElementById('btnCopiarHTML').addEventListener('click', copiarHTMLHubSpot);
-
-
   </script>
 
-<div style="width: 100%; max-width: 800px; margin-top: 40px; padding: 20px; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); font-family: 'Montserrat', sans-serif;">
-  <h3 style="color: #2E3233;">🛠️ Como usar sua assinatura</h3>
+  <div style="width: 100%; max-width: 800px; margin-top: 40px; padding: 20px; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); font-family: 'Montserrat', sans-serif;">
+    <h3 style="color: #2E3233;">🛠️ Como usar sua assinatura</h3>
 
-  <p style="margin-top: 10px;">Após gerar a sua assinatura, siga os passos abaixo para usar no Gmail ou Hubspot:</p>
+    <p style="margin-top: 10px;">Após gerar a sua assinatura, siga os passos abaixo para usar no Gmail ou Hubspot:</p>
 
-  <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
-
-    <div style="flex: 1; min-width: 240px;">
-      <button onclick="toggleInstrucoes('gmail-instrucoes')" style="background-color: #F9401B; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%;">📩 Instruções para Gmail</button>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+      <!-- Instructions for using the signature here -->
     </div>
-
-    <div style="flex: 1; min-width: 240px;">
-      <button onclick="toggleInstrucoes('hubspot-instrucoes')" style="background-color: #284516; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%;">📊 Instruções para HubSpot</button>
-    </div>
-
   </div>
-
-  <!-- Gmail Instructions -->
-  <div id="gmail-instrucoes" style="display: none; margin-top: 30px;">
-    <h4 style="color: #2E3233;">📩 Como adicionar no Gmail:</h4>
-    <ol style="padding-left: 20px; margin-top: 10px;">
-      <li>Acesse o Gmail e clique no ícone de engrenagem (⚙️);</li>
-      <li>Vá em <strong>“Ver todas as configurações”</strong>;</li>
-      <li>Na aba <strong>“Geral”</strong>, desça até <strong>“Assinatura”</strong>;</li>
-      <li>Clique em <strong>“Criar nova”</strong> e dê um nome à assinatura;</li>
-      <li>Cole os dados da assinatura criada;</li>
-      <li>Em <strong>"Padrões de assinatura"</strong>, selecione a assinatura nos dois campos;</li>	
-      <li>Role até o fim e clique em <strong>“Salvar alterações”</strong>.</li>
-    </ol>
-     <p>Exemplo em vídeo:</p>
-  <video width="100%" controls>
-    <source src="https://i.imgur.com/G1aBLie.mp4" type="video/mp4">
-    Seu navegador não suporta vídeo.
-  </video>
-  </div>
-
-  <!-- HubSpot Instructions -->
-  <div id="hubspot-instrucoes" style="display: none; margin-top: 30px;">
-    <h4 style="color: #2E3233;">📊 Como adicionar no HubSpot:</h4>
-    <ol style="padding-left: 20px; margin-top: 10px;">
-      <li>Entre em sua conta HubSpot;</li>
-      <li>No menu superior direito, clique no ícone de engrenagem (⚙️);</li>
-      <li>Agora clique na aba <strong>“E-mail”</strong>;</li>
-      <li>Escolha a opção <strong>“Gerenciar assinaturas de e-mail”</strong>;</li>
-      <li>Na janela que abriu, clique na opção <strong>HTML</strong> no canto superior direito;</li>
-      <li>Cole o código HTML que você copiou.</li>
-      <li>Clique em <strong>Salvar</strong>;</li>
-      <li>Após a mensagem de confirmação, feche a janela pop-up;</li>
-    </ol>
-       <p>Exemplo em vídeo:</p>
-  <video width="100%" controls>
-    <source src="https://i.imgur.com/KtEuEhM.mp4" type="video/mp4">
-    Seu navegador não suporta vídeo.
-  </video>
-  </div>
-</div>
-<script>
-  function toggleInstrucoes(id) {
-    const el = document.getElementById(id);
-    if (el.style.display === 'block') {
-      el.style.display = 'none';
-    } else {
-      el.style.display = 'block';
-    }
-  }
-</script>
 </body>
 </html>
-
-
