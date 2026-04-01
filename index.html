@@ -606,10 +606,66 @@
     <h3 style="color: #2E3233;">🛠️ Como usar sua assinatura</h3>
 
     <p style="margin-top: 10px;">Após gerar a sua assinatura, siga os passos abaixo para usar no Gmail ou Hubspot:</p>
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
 
-    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
-      <!-- Instructions for using the signature here -->
+    <div style="flex: 1; min-width: 240px;">
+      <button onclick="toggleInstrucoes('gmail-instrucoes')" style="background-color: #F9401B; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%;">📩 Instruções para Gmail</button>
     </div>
+
+    <div style="flex: 1; min-width: 240px;">
+      <button onclick="toggleInstrucoes('hubspot-instrucoes')" style="background-color: #284516; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%;">📊 Instruções para HubSpot</button>
+    </div>
+
   </div>
+
+  <!-- Gmail Instructions -->
+  <div id="gmail-instrucoes" style="display: none; margin-top: 30px;">
+    <h4 style="color: #2E3233;">📩 Como adicionar no Gmail:</h4>
+    <ol style="padding-left: 20px; margin-top: 10px;">
+      <li>Acesse o Gmail e clique no ícone de engrenagem (⚙️);</li>
+      <li>Vá em <strong>“Ver todas as configurações”</strong>;</li>
+      <li>Na aba <strong>“Geral”</strong>, desça até <strong>“Assinatura”</strong>;</li>
+      <li>Clique em <strong>“Criar nova”</strong> e dê um nome à assinatura;</li>
+      <li>Cole os dados da assinatura criada;</li>
+      <li>Em <strong>"Padrões de assinatura"</strong>, selecione a assinatura nos dois campos;</li>	
+      <li>Role até o fim e clique em <strong>“Salvar alterações”</strong>.</li>
+    </ol>
+     <p>Exemplo em vídeo:</p>
+  <video width="100%" controls>
+    <source src="https://i.imgur.com/G1aBLie.mp4" type="video/mp4">
+    Seu navegador não suporta vídeo.
+  </video>
+  </div>
+
+  <!-- HubSpot Instructions -->
+  <div id="hubspot-instrucoes" style="display: none; margin-top: 30px;">
+    <h4 style="color: #2E3233;">📊 Como adicionar no HubSpot:</h4>
+    <ol style="padding-left: 20px; margin-top: 10px;">
+      <li>Entre em sua conta HubSpot;</li>
+      <li>No menu superior direito, clique no ícone de engrenagem (⚙️);</li>
+      <li>Agora clique na aba <strong>“E-mail”</strong>;</li>
+      <li>Escolha a opção <strong>“Gerenciar assinaturas de e-mail”</strong>;</li>
+      <li>Na janela que abriu, clique na opção <strong>HTML</strong> no canto superior direito;</li>
+      <li>Cole o código HTML que você copiou.</li>
+      <li>Clique em <strong>Salvar</strong>;</li>
+      <li>Após a mensagem de confirmação, feche a janela pop-up;</li>
+    </ol>
+       <p>Exemplo em vídeo:</p>
+  <video width="100%" controls>
+    <source src="https://i.imgur.com/KtEuEhM.mp4" type="video/mp4">
+    Seu navegador não suporta vídeo.
+  </video>
+  </div>
+</div>
+<script>
+  function toggleInstrucoes(id) {
+    const el = document.getElementById(id);
+    if (el.style.display === 'block') {
+      el.style.display = 'none';
+    } else {
+      el.style.display = 'block';
+    }
+  }
+</script>
 </body>
 </html>
