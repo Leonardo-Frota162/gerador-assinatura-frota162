@@ -107,17 +107,6 @@
 
     .form-divider { height: 1px; background: var(--cinza-bg); margin: 18px 0; }
 
-    .btn-primary {
-      width: 100%; padding: 13px;
-      background: var(--verde); color: white; border: none;
-      border-radius: 10px; font-family: 'Montserrat', sans-serif;
-      font-size: 13px; font-weight: 700; cursor: pointer;
-      transition: background 0.2s, transform 0.1s; margin-bottom: 10px;
-    }
-    .btn-primary:hover { background: var(--verde-escuro); }
-    .btn-primary:active { transform: scale(0.98); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
     .btn-secondary {
       width: 100%; padding: 10px; background: transparent;
       color: #777; border: 1.5px solid #e0e0e0; border-radius: 10px;
@@ -283,7 +272,6 @@
 
       <div class="form-divider"></div>
 
-      <button id="btnGerar" type="button" class="btn-primary">🚀 Gerar assinatura</button>
       <button id="btnEditarFoto" type="button" class="btn-secondary">✂️ Reajustar foto</button>
     </div>
 
@@ -378,7 +366,8 @@
 
   <script>
     let originalImage = null;
-    let croppedPhotoData = '';
+    let croppedPhotoData = '';  // URL pública do imgbb — usada na assinatura copiável
+    let previewFotoTemp = '';   // base64 local — só para o preview visual durante o upload
     let editor = {
       canvas: null, ctx: null, img: null,
       scale: 1, minScale: 0.5, maxScale: 3,
@@ -431,22 +420,17 @@
 
     function setFotoStatus(state) {
       const el = document.getElementById('status-foto');
-      const btn = document.getElementById('btnGerar');
       const styles = {
-        uploading: { bg:'#e3f2fd', border:'#1976d2', color:'#0d47a1', html:'⏳ <strong>Enviando foto...</strong> Aguarde antes de gerar.' },
-        ok:        { bg:'#e8f5e9', border:'#388e3c', color:'#1b5e20', html:'✅ <strong>Foto enviada!</strong> Clique em "Gerar assinatura".' },
+        uploading: { bg:'#e3f2fd', border:'#1976d2', color:'#0d47a1', html:'⏳ <strong>Enviando foto...</strong> Aguarde antes de copiar.' },
+        ok:        { bg:'#e8f5e9', border:'#388e3c', color:'#1b5e20', html:'✅ <strong>Foto enviada!</strong> Agora você pode copiar a assinatura.' },
         error:     { bg:'#fff3e0', border:'#f57c00', color:'#e65100', html:'⚠️ <strong>Falha no upload.</strong> A foto pode não aparecer em alguns clientes de email.' },
       };
       if (styles[state]) {
         const s = styles[state];
         el.style.cssText = `display:block;background:${s.bg};border-left:3px solid ${s.border};color:${s.color};padding:8px 12px;border-radius:8px;font-size:12px;line-height:1.5;margin-top:8px;`;
         el.innerHTML = s.html;
-        btn.disabled = state === 'uploading';
-        btn.style.opacity = state === 'uploading' ? '0.5' : '1';
-        btn.style.cursor = state === 'uploading' ? 'not-allowed' : 'pointer';
       } else {
         el.style.display = 'none';
-        btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
       }
     }
 
@@ -518,16 +502,37 @@
       ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(editor.img, (size/2)+(editor.offsetX-cx)*k, (size/2)+(editor.offsetY-cy)*k, editor.img.width*S*k, editor.img.height*S*k);
       ctx.restore();
-      croppedPhotoData = out.toDataURL('image/jpeg', 0.92);
-      closeEditor(); setFotoStatus('uploading');
+
+      // base64 local — usado APENAS para o preview visual enquanto o upload ocorre
+      // NÃO é salvo em croppedPhotoData para evitar que a assinatura copiável use base64
+      const base64Local = out.toDataURL('image/jpeg', 0.92);
+      croppedPhotoData = ''; // garante que a assinatura copiável não use base64
+
+      closeEditor();
+      setFotoStatus('uploading');
+
+      // Mostra a foto no preview visual usando base64 temporário
+      previewFotoTemp = base64Local;
+      atualizarPreview();
+
       try {
         const fd = new FormData();
-        fd.append('image', croppedPhotoData.replace(/^data:image\/\w+;base64,/,''));
+        fd.append('image', base64Local.replace(/^data:image\/\w+;base64,/,''));
         const res = await fetch('https://api.imgbb.com/1/upload?key=185fcda1bb2ade826e80d5d805623957', { method:'POST', body:fd });
         const json = await res.json();
-        if (json.success && json.data?.url) { croppedPhotoData = json.data.url; setFotoStatus('ok'); atualizarPreview(); }
-        else setFotoStatus('error');
-      } catch { setFotoStatus('error'); }
+        if (json.success && json.data?.url) {
+          croppedPhotoData = json.data.url; // URL pública — agora sim salva
+          previewFotoTemp = '';             // limpa o temporário
+          setFotoStatus('ok');
+          atualizarPreview();              // atualiza preview com URL definitiva
+        } else {
+          previewFotoTemp = '';
+          setFotoStatus('error');
+        }
+      } catch {
+        previewFotoTemp = '';
+        setFotoStatus('error');
+      }
     });
 
     document.getElementById('editor-close').addEventListener('click', closeEditor);
@@ -623,7 +628,7 @@
         originalImage = await loadImageFile(f);
         document.getElementById('foto-label-text').textContent = f.name;
         btnEditarFoto.style.display = 'block';
-        croppedPhotoData = ''; setFotoStatus('hidden');
+        croppedPhotoData = ''; previewFotoTemp = ''; setFotoStatus('hidden');
         openEditor(originalImage);
       } catch { originalImage = null; btnEditarFoto.style.display = 'none'; }
     });
@@ -638,8 +643,9 @@
       const linkedin = document.getElementById('linkedin').value.trim();
       const isWhatsapp = document.getElementById('whatsapp').checked;
 
-      // Se tem foto carregada mas não recortada ainda, não abre o editor automaticamente no realtime
-      const html = gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, croppedPhotoData || '');
+      // Para o preview visual: usa a URL pública se disponível, senão o base64 temporário
+      const fotoParaPreview = croppedPhotoData || previewFotoTemp || '';
+      const html = gerarAssinaturaHTML(nome, cargo, telefone, linkedin, isWhatsapp, fotoParaPreview);
       const previewEl = document.getElementById('assinatura-preview');
       previewEl.removeAttribute('style');
       previewEl.style.overflowX = 'auto';
@@ -656,18 +662,13 @@
     });
     document.getElementById('whatsapp').addEventListener('change', atualizarPreview);
 
-    // Botão "Gerar" agora só abre o editor se houver foto pendente, senão apenas atualiza
-    document.getElementById('btnGerar').addEventListener('click', () => {
-      if (!croppedPhotoData && originalImage && editorBackdrop.style.display !== 'flex') {
-        openEditor(originalImage);
-      } else {
-        atualizarPreview();
-      }
-    });
-
     async function copiarAssinatura() {
       const preview = document.getElementById('assinatura-preview');
-      if (!preview.querySelector('table')) { alert('Gere a assinatura antes de copiar!'); return; }
+      if (!preview.querySelector('table')) { alert('Preencha os dados ao lado para gerar a assinatura!'); return; }
+      if (previewFotoTemp && !croppedPhotoData) {
+        alert('Aguarde! A foto ainda está sendo enviada. Copie após o status "✅ Foto enviada!" aparecer.');
+        return;
+      }
       try {
         if (navigator.clipboard && window.ClipboardItem) {
           await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([preview.innerHTML],{type:'text/html'}), 'text/plain': new Blob([preview.innerText],{type:'text/plain'}) })]);
@@ -681,6 +682,10 @@
     }
 
     function copiarHTMLHubSpot() {
+      if (previewFotoTemp && !croppedPhotoData) {
+        alert('Aguarde! A foto ainda está sendo enviada. Copie após o status "✅ Foto enviada!" aparecer.');
+        return;
+      }
       try {
         const html = gerarAssinaturaHTML(
           document.getElementById('nome').value, document.getElementById('cargo').value,
