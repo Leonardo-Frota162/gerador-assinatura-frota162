@@ -517,14 +517,16 @@
 
       try {
         const fd = new FormData();
-        fd.append('image', base64Local.replace(/^data:image\/\w+;base64,/,''));
-        const res = await fetch('https://api.imgbb.com/1/upload?key=185fcda1bb2ade826e80d5d805623957', { method:'POST', body:fd });
+        fd.append('file', base64Local);
+        fd.append('upload_preset', 'kk290rsf');
+        fd.append('api_key', '492368825933837');
+        const res = await fetch('https://api.cloudinary.com/v1_1/dniceyhhg/image/upload', { method:'POST', body:fd });
         const json = await res.json();
-        if (json.success && json.data?.url) {
-          croppedPhotoData = json.data.url; // URL pública — agora sim salva
-          previewFotoTemp = '';             // limpa o temporário
+        if (json.secure_url) {
+          croppedPhotoData = json.secure_url; // URL pública — agora sim salva
+          previewFotoTemp = '';               // limpa o temporário
           setFotoStatus('ok');
-          atualizarPreview();              // atualiza preview com URL definitiva
+          atualizarPreview();                 // atualiza preview com URL definitiva
         } else {
           previewFotoTemp = '';
           setFotoStatus('error');
